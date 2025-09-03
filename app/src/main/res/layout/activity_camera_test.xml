@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical" 
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Camera2 API测试"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="此页面用于测试Camera2 API功能并诊断CameraDevice$1空指针异常"
+        android:textSize="16sp"
+        android:layout_marginBottom="32dp" 
+        android:textAlignment="center" />
+
+    <Button
+        android:id="@+id/test_camera_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="测试摄像头"
+        android:textSize="18sp"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="12dp" />
+
+</LinearLayout>
