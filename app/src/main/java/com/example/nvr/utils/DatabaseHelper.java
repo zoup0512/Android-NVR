@@ -78,13 +78,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
 
         CameraDevice camera = new CameraDevice(
-                cursor.getString(0),
-                cursor.getString(1),
-                cursor.getString(2),
+                cursor.getString(0) != null ? cursor.getString(0) : "",
+                cursor.getString(1) != null ? cursor.getString(1) : "",
+                cursor.getString(2) != null ? cursor.getString(2) : "",
                 cursor.getInt(3),
-                cursor.getString(4),
-                cursor.getString(5),
-                cursor.getString(6)
+                cursor.getString(4) != null ? cursor.getString(4) : "",
+                cursor.getString(5) != null ? cursor.getString(5) : "",
+                cursor.getString(6) != null ? cursor.getString(6) : ""
         );
         
         cursor.close();
@@ -102,13 +102,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 CameraDevice camera = new CameraDevice(
-                        cursor.getString(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
+                        cursor.getString(0) != null ? cursor.getString(0) : "",
+                        cursor.getString(1) != null ? cursor.getString(1) : "",
+                        cursor.getString(2) != null ? cursor.getString(2) : "",
                         cursor.getInt(3),
-                        cursor.getString(4),
-                        cursor.getString(5),
-                        cursor.getString(6)
+                        cursor.getString(4) != null ? cursor.getString(4) : "",
+                        cursor.getString(5) != null ? cursor.getString(5) : "",
+                        cursor.getString(6) != null ? cursor.getString(6) : ""
                 );
                 cameraList.add(camera);
             } while (cursor.moveToNext());

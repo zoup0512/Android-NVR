@@ -18,27 +18,38 @@ public class RecordingFile implements Parcelable {
 
     public RecordingFile(String id, String fileName, String filePath, long fileSize, 
                         Date startTime, Date endTime, String cameraId, String cameraName) {
-        this.id = id;
-        this.fileName = fileName;
-        this.filePath = filePath;
+        this.id = id != null ? id : "";
+        this.fileName = fileName != null ? fileName : "";
+        this.filePath = filePath != null ? filePath : "";
         this.fileSize = fileSize;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.cameraId = cameraId;
-        this.cameraName = cameraName;
+        this.cameraId = cameraId != null ? cameraId : "";
+        this.cameraName = cameraName != null ? cameraName : "";
     }
 
     protected RecordingFile(Parcel in) {
         id = in.readString();
+        if (id == null) id = "";
+        
         fileName = in.readString();
+        if (fileName == null) fileName = "";
+        
         filePath = in.readString();
+        if (filePath == null) filePath = "";
+        
         fileSize = in.readLong();
+        
         long startTimeMillis = in.readLong();
         long endTimeMillis = in.readLong();
         startTime = startTimeMillis > 0 ? new Date(startTimeMillis) : null;
         endTime = endTimeMillis > 0 ? new Date(endTimeMillis) : null;
+        
         cameraId = in.readString();
+        if (cameraId == null) cameraId = "";
+        
         cameraName = in.readString();
+        if (cameraName == null) cameraName = "";
     }
 
     public static final Creator<RecordingFile> CREATOR = new Creator<RecordingFile>() {
@@ -76,7 +87,7 @@ public class RecordingFile implements Parcelable {
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = id != null ? id : "";
     }
 
     public String getFileName() {
@@ -84,7 +95,7 @@ public class RecordingFile implements Parcelable {
     }
 
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        this.fileName = fileName != null ? fileName : "";
     }
 
     public String getFilePath() {
@@ -92,7 +103,7 @@ public class RecordingFile implements Parcelable {
     }
 
     public void setFilePath(String filePath) {
-        this.filePath = filePath;
+        this.filePath = filePath != null ? filePath : "";
     }
 
     public long getFileSize() {
@@ -124,7 +135,7 @@ public class RecordingFile implements Parcelable {
     }
 
     public void setCameraId(String cameraId) {
-        this.cameraId = cameraId;
+        this.cameraId = cameraId != null ? cameraId : "";
     }
 
     public String getCameraName() {
@@ -132,7 +143,7 @@ public class RecordingFile implements Parcelable {
     }
 
     public void setCameraName(String cameraName) {
-        this.cameraName = cameraName;
+        this.cameraName = cameraName != null ? cameraName : "";
     }
 
     // 获取文件的可读大小
@@ -165,6 +176,9 @@ public class RecordingFile implements Parcelable {
 
     // 删除文件
     public boolean deleteFile() {
+        if (filePath == null || filePath.isEmpty()) {
+            return false;
+        }
         File file = new File(filePath);
         return file.exists() && file.delete();
     }

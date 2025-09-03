@@ -53,23 +53,34 @@ public class LiveViewFragment extends Fragment {
         switchCameraBtn.setOnClickListener(v -> switchToNextCamera());
         
         // 录制按钮点击事件
-        recordBtn.setOnClickListener(v -> toggleRecording());
+        if (recordBtn != null) {
+            recordBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleRecording();
+                }
+            });
+        }
         
         return view;
     }
     
     private void loadFirstCamera() {
+        if (dbHelper == null) return;
+        
         List<CameraDevice> cameras = dbHelper.getAllCameras();
-        if (!cameras.isEmpty()) {
+        if (cameras != null && !cameras.isEmpty()) {
             currentCamera = cameras.get(0);
             startCameraStream(currentCamera);
         } else {
-            Toast.makeText(getContext(), "请先添加摄像头设备", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "请先添加摄像头设备", Toast.LENGTH_SHORT).show();
+            }
         }
     }
     
     private void switchToNextCamera() {
-        if (currentCamera == null) return;
+        if (currentCamera == null || dbHelper == null) return;
         
         // 停止当前流
         if (mediaPlayer != null) {
@@ -78,43 +89,59 @@ public class LiveViewFragment extends Fragment {
         
         // 获取下一个摄像头
         List<CameraDevice> cameras = dbHelper.getAllCameras();
-        int currentIndex = cameras.indexOf(currentCamera);
-        int nextIndex = (currentIndex + 1) % cameras.size();
-        currentCamera = cameras.get(nextIndex);
-        
-        // 启动新的流
-        startCameraStream(currentCamera);
+        if (cameras != null && !cameras.isEmpty()) {
+            int currentIndex = cameras.indexOf(currentCamera);
+            int nextIndex = (currentIndex + 1) % cameras.size();
+            currentCamera = cameras.get(nextIndex);
+            
+            // 启动新的流
+            startCameraStream(currentCamera);
+        }
     }
     
     private void startCameraStream(CameraDevice camera) {
-        if (camera == null || getContext() == null) return;
+        if (camera == null || getContext() == null || streamManager == null || videoLayout == null) return;
         
         mediaPlayer = streamManager.startStream(camera, videoLayout);
-        Toast.makeText(getContext(), "正在连接到 " + camera.getName(), Toast.LENGTH_SHORT).show();
+        if (mediaPlayer != null) {
+            Toast.makeText(getContext(), "正在连接到 " + camera.getName(), Toast.LENGTH_SHORT).show();
+        }
     }
     
     private void toggleRecording() {
         if (currentCamera == null) {
-            Toast.makeText(getContext(), "没有连接的摄像头", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "没有连接的摄像头", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
         
         if (isRecording) {
             // 停止录制
-            streamManager.stopRecording(currentCamera);
+            if (streamManager != null) {
+                streamManager.stopRecording(currentCamera);
+            }
             isRecording = false;
-            Toast.makeText(getContext(), "录制已停止", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "录制已停止", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // 开始录制
-            String fileName = "REC_" + System.currentTimeMillis() + ".mp4";
-            String filePath = storageManager.getRecordingDirectoryPath() + File.separator + fileName;
-            boolean started = streamManager.startRecording(currentCamera, filePath);
-            
-            if (started) {
-                isRecording = true;
-                Toast.makeText(getContext(), "开始录制: " + fileName, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "录制启动失败", Toast.LENGTH_SHORT).show();
+            if (storageManager != null) {
+                String fileName = "REC_" + System.currentTimeMillis() + ".mp4";
+                String filePath = storageManager.getRecordingDirectoryPath() + File.separator + fileName;
+                boolean started = streamManager.startRecording(currentCamera, filePath);
+                
+                if (started) {
+                    isRecording = true;
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "开始录制: " + fileName, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "录制启动失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         }
     }
@@ -122,7 +149,7 @@ public class LiveViewFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mediaPlayer != null && currentCamera != null) {
+        if (mediaPlayer != null && currentCamera != null && streamManager != null) {
             streamManager.stopStream(mediaPlayer, currentCamera);
         }
     }

@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import com.example.nvr.activity.CameraTestActivity;
 import com.example.nvr.fragment.LiveViewFragment;
 import com.example.nvr.fragment.RecordingFragment;
 import com.example.nvr.fragment.DeviceManagerFragment;
@@ -33,35 +32,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         viewPager = findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
+        if (viewPager != null) {
+            setupViewPager(viewPager);
+        }
 
         tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        if (tabLayout != null && viewPager != null) {
+            tabLayout.setupWithViewPager(viewPager);
+        }
         
         // 设置测试摄像头按钮
         FloatingActionButton testCameraFab = findViewById(R.id.test_camera_fab);
-        testCameraFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CameraTestActivity.class);
-                startActivity(intent);
-                Toast.makeText(MainActivity.this, "启动摄像头测试", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void setupViewPager(ViewPager viewPager) {
+        if (viewPager == null) return;
+        
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new LiveViewFragment(), "实时监控");
-        adapter.addFragment(new RecordingFragment(), "录像回放");
-        adapter.addFragment(new DeviceManagerFragment(), "设备管理");
-        adapter.addFragment(new SettingsFragment(), "设置");
-        viewPager.setAdapter(adapter);
+        if (adapter != null) {
+            adapter.addFragment(new LiveViewFragment(), "实时监控");
+            adapter.addFragment(new RecordingFragment(), "录像回放");
+            adapter.addFragment(new DeviceManagerFragment(), "设备管理");
+            adapter.addFragment(new SettingsFragment(), "设置");
+            viewPager.setAdapter(adapter);
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+        private final List<Fragment> mFragmentList = new ArrayList<Fragment>();
+        private final List<String> mFragmentTitleList = new ArrayList<String>();
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
@@ -69,22 +68,33 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            if (mFragmentList != null && position >= 0 && position < mFragmentList.size()) {
+                return mFragmentList.get(position);
+            }
+            return null;
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return mFragmentList != null ? mFragmentList.size() : 0;
         }
 
         public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+            if (mFragmentList != null && fragment != null) {
+                mFragmentList.add(fragment);
+            }
+            if (mFragmentTitleList != null && title != null) {
+                mFragmentTitleList.add(title);
+            }
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            if (mFragmentTitleList != null && position >= 0 && position < mFragmentTitleList.size()) {
+                String title = mFragmentTitleList.get(position);
+                return title != null ? title : "";
+            }
+            return "";
         }
     }
 }

@@ -60,23 +60,35 @@ public class DeviceManagerFragment extends Fragment {
     }
 
     private void loadDevices() {
-        if (getContext() == null) return;
+        if (getContext() == null || dbHelper == null) return;
 
         List<CameraDevice> devices = dbHelper.getAllCameras();
-        cameraDevices.clear();
-        cameraDevices.addAll(devices);
-        adapter.notifyDataSetChanged();
+        if (cameraDevices != null) {
+            cameraDevices.clear();
+            if (devices != null) {
+                cameraDevices.addAll(devices);
+            }
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void showAddDeviceDialog() {
+        if (getContext() == null) return;
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("添加摄像头设备");
 
         // 创建对话框布局
         LayoutInflater inflater = getLayoutInflater();
+        if (inflater == null) return;
+        
         View dialogView = inflater.inflate(R.layout.dialog_add_device, null);
         builder.setView(dialogView);
 
+        if (dialogView == null) return;
+        
         EditText nameEditText = dialogView.findViewById(R.id.device_name);
         EditText ipEditText = dialogView.findViewById(R.id.device_ip);
         EditText portEditText = dialogView.findViewById(R.id.device_port);
@@ -84,39 +96,55 @@ public class DeviceManagerFragment extends Fragment {
         EditText passwordEditText = dialogView.findViewById(R.id.device_password);
 
         // 设置确定按钮
-        builder.setPositiveButton("添加", (dialog, which) -> {
-            String name = nameEditText.getText().toString().trim();
-            String ip = ipEditText.getText().toString().trim();
-            String port = portEditText.getText().toString().trim();
-            String username = usernameEditText.getText().toString().trim();
-            String password = passwordEditText.getText().toString().trim();
+        builder.setPositiveButton("添加", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (nameEditText == null || ipEditText == null || portEditText == null || 
+                    usernameEditText == null || passwordEditText == null) {
+                    return;
+                }
+                
+                String name = nameEditText.getText() != null ? nameEditText.getText().toString().trim() : "";
+                String ip = ipEditText.getText() != null ? ipEditText.getText().toString().trim() : "";
+                String port = portEditText.getText() != null ? portEditText.getText().toString().trim() : "";
+                String username = usernameEditText.getText() != null ? usernameEditText.getText().toString().trim() : "";
+                String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
 
-            if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
-                Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
 
-            // 创建新设备
-            // 生成唯一ID (这里使用时间戳+随机数)
-            String id = String.valueOf(System.currentTimeMillis()) + (int)(Math.random() * 1000);
-            // 转换port为int
-            int portInt = 554; // 默认RTSP端口
-            try {
-                portInt = Integer.parseInt(port);
-            } catch (NumberFormatException e) {
-                // 端口格式无效，使用默认值
-            }
-            // 构建RTSP URL
-            String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
-            // 创建新设备
-            CameraDevice newDevice = new CameraDevice(id, name, ip, portInt, username, password, rtspUrl);
-            boolean result = dbHelper.addCamera(newDevice);
+                // 创建新设备
+                // 生成唯一ID (这里使用时间戳+随机数)
+                String id = String.valueOf(System.currentTimeMillis()) + (int)(Math.random() * 1000);
+                // 转换port为int
+                int portInt = 554; // 默认RTSP端口
+                try {
+                    if (!TextUtils.isEmpty(port)) {
+                        portInt = Integer.parseInt(port);
+                    }
+                } catch (NumberFormatException e) {
+                    // 端口格式无效，使用默认值
+                }
+                // 构建RTSP URL
+                String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
+                // 创建新设备
+                CameraDevice newDevice = new CameraDevice(id, name, ip, portInt, username, password, rtspUrl);
+                boolean result = dbHelper.addCamera(newDevice);
 
-            if (result) {
-                Toast.makeText(getContext(), "设备添加成功", Toast.LENGTH_SHORT).show();
-                loadDevices(); // 重新加载设备列表
-            } else {
-                Toast.makeText(getContext(), "设备添加失败", Toast.LENGTH_SHORT).show();
+                if (result) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备添加成功", Toast.LENGTH_SHORT).show();
+                    }
+                    loadDevices(); // 重新加载设备列表
+                } else {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备添加失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
 
@@ -128,6 +156,8 @@ public class DeviceManagerFragment extends Fragment {
     }
 
     private void showDeviceOptionsDialog(final CameraDevice device, final int position) {
+        if (getContext() == null || device == null) return;
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("设备操作");
         builder.setItems(new CharSequence[]{"编辑设备", "删除设备"}, new DialogInterface.OnClickListener() {
@@ -147,13 +177,19 @@ public class DeviceManagerFragment extends Fragment {
     }
 
     private void showEditDeviceDialog(final CameraDevice device) {
+        if (getContext() == null || device == null) return;
+        
         // 实现编辑设备的逻辑，类似于添加设备对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("编辑摄像头设备");
 
         LayoutInflater inflater = getLayoutInflater();
+        if (inflater == null) return;
+        
         View dialogView = inflater.inflate(R.layout.dialog_add_device, null);
         builder.setView(dialogView);
+        
+        if (dialogView == null) return;
 
         EditText nameEditText = dialogView.findViewById(R.id.device_name);
         EditText ipEditText = dialogView.findViewById(R.id.device_ip);
@@ -162,47 +198,63 @@ public class DeviceManagerFragment extends Fragment {
         EditText passwordEditText = dialogView.findViewById(R.id.device_password);
 
         // 填充现有设备信息
-        nameEditText.setText(device.getName());
-        ipEditText.setText(device.getIpAddress());
-        portEditText.setText(device.getPort());
-        usernameEditText.setText(device.getUsername());
-        passwordEditText.setText(device.getPassword());
+        if (nameEditText != null) nameEditText.setText(device.getName());
+        if (ipEditText != null) ipEditText.setText(device.getIpAddress());
+        if (portEditText != null) portEditText.setText(String.valueOf(device.getPort()));
+        if (usernameEditText != null) usernameEditText.setText(device.getUsername());
+        if (passwordEditText != null) passwordEditText.setText(device.getPassword());
 
-        builder.setPositiveButton("保存", (dialog, which) -> {
-            // 实现保存编辑后的设备信息的逻辑
-            String name = nameEditText.getText().toString().trim();
-            String ip = ipEditText.getText().toString().trim();
-            String port = portEditText.getText().toString().trim();
-            String username = usernameEditText.getText().toString().trim();
-            String password = passwordEditText.getText().toString().trim();
-
-            if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
-                Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 转换port为int类型，默认为554
-            int portInt = 554;
-            if (!TextUtils.isEmpty(port)) {
-                try {
-                    portInt = Integer.parseInt(port);
-                } catch (NumberFormatException e) {
-                    Toast.makeText(getContext(), "端口格式不正确，使用默认端口554", Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // 实现保存编辑后的设备信息的逻辑
+                if (nameEditText == null || ipEditText == null || portEditText == null || 
+                    usernameEditText == null || passwordEditText == null) {
+                    return;
                 }
-            }
+                
+                String name = nameEditText.getText() != null ? nameEditText.getText().toString().trim() : "";
+                String ip = ipEditText.getText() != null ? ipEditText.getText().toString().trim() : "";
+                String port = portEditText.getText() != null ? portEditText.getText().toString().trim() : "";
+                String username = usernameEditText.getText() != null ? usernameEditText.getText().toString().trim() : "";
+                String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
 
-            // 构建RTSP URL
-            String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
+                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
 
-            // 创建CameraDevice对象
-            CameraDevice updatedDevice = new CameraDevice(device.getId(), name, ip, portInt, username, password, rtspUrl);
-            int rowsUpdated = dbHelper.updateCamera(updatedDevice);
+                // 转换port为int类型，默认为554
+                int portInt = 554;
+                if (!TextUtils.isEmpty(port)) {
+                    try {
+                        portInt = Integer.parseInt(port);
+                    } catch (NumberFormatException e) {
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "端口格式不正确，使用默认端口554", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
 
-            if (rowsUpdated > 0) {
-                Toast.makeText(getContext(), "设备更新成功", Toast.LENGTH_SHORT).show();
-                loadDevices();
-            } else {
-                Toast.makeText(getContext(), "设备更新失败", Toast.LENGTH_SHORT).show();
+                // 构建RTSP URL
+                String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
+
+                // 创建CameraDevice对象
+                CameraDevice updatedDevice = new CameraDevice(device.getId(), name, ip, portInt, username, password, rtspUrl);
+                int rowsUpdated = dbHelper.updateCamera(updatedDevice);
+
+                if (rowsUpdated > 0) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备更新成功", Toast.LENGTH_SHORT).show();
+                    }
+                    loadDevices();
+                } else {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备更新失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
 
@@ -211,17 +263,30 @@ public class DeviceManagerFragment extends Fragment {
     }
 
     private void showDeleteDeviceDialog(final String deviceId, final int position) {
+        if (getContext() == null || deviceId == null) return;
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("确认删除");
         builder.setMessage("确定要删除这个设备吗？");
-        builder.setPositiveButton("删除", (dialog, which) -> {
-            boolean deleted = dbHelper.deleteCamera(deviceId);
-            if (deleted) {
-                cameraDevices.remove(position);
-                adapter.notifyDataSetChanged();
-                Toast.makeText(getContext(), "设备删除成功", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "设备删除失败", Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                boolean deleted = dbHelper.deleteCamera(deviceId);
+                if (deleted) {
+                    if (cameraDevices != null && position >= 0 && position < cameraDevices.size()) {
+                        cameraDevices.remove(position);
+                    }
+                    if (adapter != null) {
+                        adapter.notifyDataSetChanged();
+                    }
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备删除成功", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "设备删除失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
         builder.setNegativeButton("取消", null);
