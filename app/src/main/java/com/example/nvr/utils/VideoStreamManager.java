@@ -35,6 +35,16 @@ public class VideoStreamManager {
         ArrayList<String> options = new ArrayList<>();
         options.add("--no-drop-late-frames");
         options.add("--no-skip-frames");
+        options.add("--rtsp-tcp");
+        options.add("--network-caching=1500");
+        options.add("--clock-jitter=0");
+//        options.add("--clock-synchronization=0");
+//        try {
+//            libVLC = new LibVLC(context, options);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Failed to create LibVLC instance", e);
+//            throw new RuntimeException("Unable to initialize VLC library", e);
+//        }
         libVLC = new LibVLC(context, options);
     }
 
@@ -51,9 +61,23 @@ public class VideoStreamManager {
         mediaPlayer.attachViews(videoLayout, null, false, false);
 
         Media media = new Media(libVLC, camera.getRtspUrl());
+        Log.d(TAG, "RTSP URL: " + camera.getRtspUrl());
         media.setHWDecoderEnabled(true, false);
         media.addOption(":network-caching=1500");
         mediaPlayer.setMedia(media);
+        mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
+            @Override
+            public void onEvent(MediaPlayer.Event event) {
+                switch (event.type) {
+                    case MediaPlayer.Event.EncounteredError:
+                        Log.e(TAG, "Error encountered while playing stream");
+                        break;
+                    case MediaPlayer.Event.EndReached:
+                        Log.d(TAG, "End of stream reached");
+                        break;
+                }
+            }
+        });
         media.release();
 
         mediaPlayer.play();
@@ -109,7 +133,9 @@ public class VideoStreamManager {
 
     // 处理视频数据并写入文件
     public void handleVideoData(ByteBuffer byteBuffer, MediaCodec.BufferInfo bufferInfo, MediaFormat mediaFormat) {
-        if (mediaMuxer == null) return;
+        if (mediaMuxer == null) {
+            return;
+        }
 
         if (!isMuxerStarted) {
             videoTrackIndex = mediaMuxer.addTrack(mediaFormat);
