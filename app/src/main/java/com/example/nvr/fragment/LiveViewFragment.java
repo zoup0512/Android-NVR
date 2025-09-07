@@ -101,7 +101,7 @@ public class LiveViewFragment extends Fragment {
     
     private void startCameraStream(CameraDevice camera) {
         if (camera == null || getContext() == null || streamManager == null || videoLayout == null) return;
-        
+        camera.setRtspUrl("rtsp://admin:0512@192.168.110.174:8554/live");
         mediaPlayer = streamManager.startStream(camera, videoLayout);
         if (mediaPlayer != null) {
             Toast.makeText(getContext(), "正在连接到 " + camera.getName(), Toast.LENGTH_SHORT).show();
