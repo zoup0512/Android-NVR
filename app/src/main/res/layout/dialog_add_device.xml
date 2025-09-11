@@ -14,35 +14,11 @@
         android:layout_marginBottom="12dp" />
 
     <EditText
-        android:id="@+id/device_ip"
+        android:id="@+id/device_rtsp_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="IP地址"
+        android:hint="RTSP URL (例如: rtsp://username:password@ip:port/)"
         android:inputType="text"
         android:layout_marginBottom="12dp" />
-
-    <EditText
-        android:id="@+id/device_port"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="端口号"
-        android:inputType="number"
-        android:text="554"
-        android:layout_marginBottom="12dp" />
-
-    <EditText
-        android:id="@+id/device_username"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="用户名"
-        android:inputType="text"
-        android:layout_marginBottom="12dp" />
-
-    <EditText
-        android:id="@+id/device_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="密码"
-        android:inputType="textPassword" />
 
 </LinearLayout>

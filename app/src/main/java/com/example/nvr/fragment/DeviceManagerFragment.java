@@ -90,29 +90,22 @@ public class DeviceManagerFragment extends Fragment {
         if (dialogView == null) return;
         
         EditText nameEditText = dialogView.findViewById(R.id.device_name);
-        EditText ipEditText = dialogView.findViewById(R.id.device_ip);
-        EditText portEditText = dialogView.findViewById(R.id.device_port);
-        EditText usernameEditText = dialogView.findViewById(R.id.device_username);
-        EditText passwordEditText = dialogView.findViewById(R.id.device_password);
+        EditText rtspUrlEditText = dialogView.findViewById(R.id.device_rtsp_url);
 
         // 设置确定按钮
         builder.setPositiveButton("添加", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (nameEditText == null || ipEditText == null || portEditText == null || 
-                    usernameEditText == null || passwordEditText == null) {
+                if (nameEditText == null || rtspUrlEditText == null) {
                     return;
                 }
                 
                 String name = nameEditText.getText() != null ? nameEditText.getText().toString().trim() : "";
-                String ip = ipEditText.getText() != null ? ipEditText.getText().toString().trim() : "";
-                String port = portEditText.getText() != null ? portEditText.getText().toString().trim() : "";
-                String username = usernameEditText.getText() != null ? usernameEditText.getText().toString().trim() : "";
-                String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
+                String rtspUrl = rtspUrlEditText.getText() != null ? rtspUrlEditText.getText().toString().trim() : "";
 
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
+                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(rtspUrl)) {
                     if (getContext() != null) {
-                        Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "名称和RTSP URL不能为空", Toast.LENGTH_SHORT).show();
                     }
                     return;
                 }
@@ -120,19 +113,9 @@ public class DeviceManagerFragment extends Fragment {
                 // 创建新设备
                 // 生成唯一ID (这里使用时间戳+随机数)
                 String id = String.valueOf(System.currentTimeMillis()) + (int)(Math.random() * 1000);
-                // 转换port为int
-                int portInt = 554; // 默认RTSP端口
-                try {
-                    if (!TextUtils.isEmpty(port)) {
-                        portInt = Integer.parseInt(port);
-                    }
-                } catch (NumberFormatException e) {
-                    // 端口格式无效，使用默认值
-                }
-                // 构建RTSP URL
-                String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
+                
                 // 创建新设备
-                CameraDevice newDevice = new CameraDevice(id, name, ip, portInt, username, password, rtspUrl);
+                CameraDevice newDevice = new CameraDevice(id, name, rtspUrl);
                 boolean result = dbHelper.addCamera(newDevice);
 
                 if (result) {
@@ -192,57 +175,32 @@ public class DeviceManagerFragment extends Fragment {
         if (dialogView == null) return;
 
         EditText nameEditText = dialogView.findViewById(R.id.device_name);
-        EditText ipEditText = dialogView.findViewById(R.id.device_ip);
-        EditText portEditText = dialogView.findViewById(R.id.device_port);
-        EditText usernameEditText = dialogView.findViewById(R.id.device_username);
-        EditText passwordEditText = dialogView.findViewById(R.id.device_password);
+        EditText rtspUrlEditText = dialogView.findViewById(R.id.device_rtsp_url);
 
         // 填充现有设备信息
         if (nameEditText != null) nameEditText.setText(device.getName());
-        if (ipEditText != null) ipEditText.setText(device.getIpAddress());
-        if (portEditText != null) portEditText.setText(String.valueOf(device.getPort()));
-        if (usernameEditText != null) usernameEditText.setText(device.getUsername());
-        if (passwordEditText != null) passwordEditText.setText(device.getPassword());
+        if (rtspUrlEditText != null) rtspUrlEditText.setText(device.getRtspUrl());
 
         builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // 实现保存编辑后的设备信息的逻辑
-                if (nameEditText == null || ipEditText == null || portEditText == null || 
-                    usernameEditText == null || passwordEditText == null) {
+                if (nameEditText == null || rtspUrlEditText == null) {
                     return;
                 }
                 
                 String name = nameEditText.getText() != null ? nameEditText.getText().toString().trim() : "";
-                String ip = ipEditText.getText() != null ? ipEditText.getText().toString().trim() : "";
-                String port = portEditText.getText() != null ? portEditText.getText().toString().trim() : "";
-                String username = usernameEditText.getText() != null ? usernameEditText.getText().toString().trim() : "";
-                String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
+                String rtspUrl = rtspUrlEditText.getText() != null ? rtspUrlEditText.getText().toString().trim() : "";
 
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(ip)) {
+                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(rtspUrl)) {
                     if (getContext() != null) {
-                        Toast.makeText(getContext(), "名称和IP地址不能为空", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "名称和RTSP URL不能为空", Toast.LENGTH_SHORT).show();
                     }
                     return;
                 }
 
-                // 转换port为int类型，默认为554
-                int portInt = 554;
-                if (!TextUtils.isEmpty(port)) {
-                    try {
-                        portInt = Integer.parseInt(port);
-                    } catch (NumberFormatException e) {
-                        if (getContext() != null) {
-                            Toast.makeText(getContext(), "端口格式不正确，使用默认端口554", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-
-                // 构建RTSP URL
-                String rtspUrl = "rtsp://" + username + ":" + password + "@" + ip + ":" + portInt + "/";
-
                 // 创建CameraDevice对象
-                CameraDevice updatedDevice = new CameraDevice(device.getId(), name, ip, portInt, username, password, rtspUrl);
+                CameraDevice updatedDevice = new CameraDevice(device.getId(), name, rtspUrl);
                 int rowsUpdated = dbHelper.updateCamera(updatedDevice);
 
                 if (rowsUpdated > 0) {

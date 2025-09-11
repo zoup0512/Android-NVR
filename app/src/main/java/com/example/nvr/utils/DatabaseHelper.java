@@ -13,17 +13,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // 增加版本号以触发更新
     private static final String DATABASE_NAME = "NVRDatabase";
     private static final String TABLE_CAMERAS = "cameras";
 
     // 摄像头表字段
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
-    private static final String KEY_IP = "ip_address";
-    private static final String KEY_PORT = "port";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PASSWORD = "password";
     private static final String KEY_RTSP_URL = "rtsp_url";
 
     public DatabaseHelper(Context context) {
@@ -35,10 +31,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String CREATE_CAMERAS_TABLE = "CREATE TABLE " + TABLE_CAMERAS + "("
                 + KEY_ID + " TEXT PRIMARY KEY,"
                 + KEY_NAME + " TEXT,"
-                + KEY_IP + " TEXT,"
-                + KEY_PORT + " INTEGER,"
-                + KEY_USERNAME + " TEXT,"
-                + KEY_PASSWORD + " TEXT,"
                 + KEY_RTSP_URL + " TEXT" + ")";
         db.execSQL(CREATE_CAMERAS_TABLE);
     }
@@ -56,10 +48,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_ID, camera.getId());
         values.put(KEY_NAME, camera.getName());
-        values.put(KEY_IP, camera.getIpAddress());
-        values.put(KEY_PORT, camera.getPort());
-        values.put(KEY_USERNAME, camera.getUsername());
-        values.put(KEY_PASSWORD, camera.getPassword());
         values.put(KEY_RTSP_URL, camera.getRtspUrl());
 
         long result = db.insert(TABLE_CAMERAS, null, values);
@@ -72,7 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_CAMERAS, new String[] { KEY_ID,
-                        KEY_NAME, KEY_IP, KEY_PORT, KEY_USERNAME, KEY_PASSWORD, KEY_RTSP_URL }, KEY_ID + "=?",
+                        KEY_NAME, KEY_RTSP_URL }, KEY_ID + "=?",
                 new String[] { id }, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
@@ -80,11 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         CameraDevice camera = new CameraDevice(
                 cursor.getString(0) != null ? cursor.getString(0) : "",
                 cursor.getString(1) != null ? cursor.getString(1) : "",
-                cursor.getString(2) != null ? cursor.getString(2) : "",
-                cursor.getInt(3),
-                cursor.getString(4) != null ? cursor.getString(4) : "",
-                cursor.getString(5) != null ? cursor.getString(5) : "",
-                cursor.getString(6) != null ? cursor.getString(6) : ""
+                cursor.getString(2) != null ? cursor.getString(2) : ""
         );
         
         cursor.close();
@@ -104,11 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 CameraDevice camera = new CameraDevice(
                         cursor.getString(0) != null ? cursor.getString(0) : "",
                         cursor.getString(1) != null ? cursor.getString(1) : "",
-                        cursor.getString(2) != null ? cursor.getString(2) : "",
-                        cursor.getInt(3),
-                        cursor.getString(4) != null ? cursor.getString(4) : "",
-                        cursor.getString(5) != null ? cursor.getString(5) : "",
-                        cursor.getString(6) != null ? cursor.getString(6) : ""
+                        cursor.getString(2) != null ? cursor.getString(2) : ""
                 );
                 cameraList.add(camera);
             } while (cursor.moveToNext());
@@ -124,10 +104,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_NAME, camera.getName());
-        values.put(KEY_IP, camera.getIpAddress());
-        values.put(KEY_PORT, camera.getPort());
-        values.put(KEY_USERNAME, camera.getUsername());
-        values.put(KEY_PASSWORD, camera.getPassword());
         values.put(KEY_RTSP_URL, camera.getRtspUrl());
 
         return db.update(TABLE_CAMERAS, values, KEY_ID + " = ?",

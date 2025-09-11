@@ -71,11 +71,42 @@ public class LiveViewFragment extends Fragment {
         List<CameraDevice> cameras = dbHelper.getAllCameras();
         if (cameras != null && !cameras.isEmpty()) {
             currentCamera = cameras.get(0);
-            startCameraStream(currentCamera);
+            // Don't start the stream immediately in onCreateView
+            // Instead, wait for the view to be fully attached to the window
         } else {
             if (getContext() != null) {
                 Toast.makeText(getContext(), "请先添加摄像头设备", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+    
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        // Check if view is attached to window
+        if (videoLayout != null && videoLayout.getWindowToken() != null) {
+            // If already attached, start the stream immediately
+            if (currentCamera != null) {
+                startCameraStream(currentCamera);
+            }
+        } else {
+            // If not attached, add a window focus change listener
+            videoLayout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, 
+                                           int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    // Check if window token is now available
+                    if (videoLayout.getWindowToken() != null) {
+                        // Remove the listener to avoid multiple calls
+                        videoLayout.removeOnLayoutChangeListener(this);
+                        // Start the stream
+                        if (currentCamera != null) {
+                            startCameraStream(currentCamera);
+                        }
+                    }
+                }
+            });
         }
     }
     
@@ -95,13 +126,24 @@ public class LiveViewFragment extends Fragment {
             currentCamera = cameras.get(nextIndex);
             
             // 启动新的流
-            startCameraStream(currentCamera);
+            if (videoLayout != null && videoLayout.getWindowToken() != null) {
+                startCameraStream(currentCamera);
+            }
         }
     }
     
     private void startCameraStream(CameraDevice camera) {
         if (camera == null || getContext() == null || streamManager == null || videoLayout == null) return;
-        camera.setRtspUrl("rtsp://admin:0512@192.168.110.174:8554/live");
+        
+        // Additional safety check to ensure the view is attached to a window
+        if (videoLayout.getWindowToken() == null) {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "视图尚未完全加载，请稍候重试", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+        
+//        camera.setRtspUrl("rtsp://admin:0512@192.168.110.174:8554/live");
         mediaPlayer = streamManager.startStream(camera, videoLayout);
         if (mediaPlayer != null) {
             Toast.makeText(getContext(), "正在连接到 " + camera.getName(), Toast.LENGTH_SHORT).show();

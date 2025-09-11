@@ -54,7 +54,7 @@ public class CameraDeviceAdapter extends BaseAdapter {
 
         CameraDevice cameraDevice = cameraDevices.get(position);
         holder.deviceNameTextView.setText(cameraDevice.getName());
-        holder.deviceIpTextView.setText(cameraDevice.getIpAddress() + ":" + cameraDevice.getPort());
+        holder.deviceIpTextView.setText(cameraDevice.getRtspUrl());
 
         return convertView;
     }
